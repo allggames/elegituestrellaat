@@ -82,6 +82,90 @@
     });
   }
 
+/* ------------------ Splash loader (insert near top of script.js) ------------------ */
+(function splashInit() {
+  // Config
+  const STAR_COUNT = 46;        // cantidad de estrellas en pantalla
+  const LOAD_MS = 1400;        // duración aproximada de "carga" (ms)
+
+  // helper: crea estrellas emoji dentro de #splash-stars
+  function createSplashStars() {
+    const container = document.getElementById('splash-stars');
+    if (!container) return;
+    container.innerHTML = '';
+    const w = container.clientWidth || window.innerWidth;
+    const h = container.clientHeight || window.innerHeight;
+    for (let i=0;i<STAR_COUNT;i++){
+      const s = document.createElement('div');
+      s.className = 'splash-star';
+      s.textContent = '🌟';
+      // posicion aleatoria
+      const left = Math.random() * 100;
+      const top = Math.random() * 100;
+      s.style.left = left + '%';
+      s.style.top = top + '%';
+      // tamaño y duración aleatoria
+      const size = 10 + Math.round(Math.random()*26); // px
+      s.style.fontSize = size + 'px';
+      const dur = 6 + Math.random()*8;
+      s.style.animationDuration = dur.toFixed(2) + 's';
+      s.style.opacity = (0.5 + Math.random()*0.6).toFixed(2);
+      // ligera variación en delay
+      s.style.animationDelay = (Math.random()*2).toFixed(2) + 's';
+      container.appendChild(s);
+    }
+  }
+
+  // Simula progreso y luego oculta el splash
+  function runLoaderThenHide() {
+    const progress = document.getElementById('loading-progress');
+    const splash = document.getElementById('splash');
+    if (!progress || !splash) return;
+
+    // animación del progreso (lerp)
+    const start = performance.now();
+    function tick(now) {
+      const t = Math.min(1, (now - start) / LOAD_MS);
+      const eased = (1 - Math.cos(Math.PI * t)) / 2; // ease in/out
+      const percent = Math.round(eased * 100);
+      progress.style.width = percent + '%';
+      if (t < 1) requestAnimationFrame(tick);
+      else {
+        // pequeño delay para que se vea 100%
+        setTimeout(()=> {
+          // hide splash with fade
+          splash.classList.add('hidden');
+          // luego de ocultar, mover/mostrar el logo inferior
+          placeBottomLogo();
+        }, 280);
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+
+  // Mover #logo (si existe) hacia el footer #bottom-logo-container
+  function placeBottomLogo() {
+    const logo = document.getElementById('logo');
+    const container = document.getElementById('bottom-logo-container');
+    if (logo && container) {
+      // detach from current parent and append
+      try {
+        container.appendChild(logo);
+        container.setAttribute('aria-hidden','false');
+      } catch(e) { /* ignore */ }
+    }
+  }
+
+  // init on DOM ready
+  document.addEventListener('DOMContentLoaded', () => {
+    // create stars (and also on resize)
+    createSplashStars();
+    window.addEventListener('resize', createSplashStars);
+    // start loader after tiny delay so everything paints
+    setTimeout(runLoaderThenHide, 160);
+  });
+})();
+  
   /* ------------------------------------------------------------------ */
   /*  ADICIONES para: asignación aleatoria de premios y bloqueo por día  */
   /* ------------------------------------------------------------------ */
