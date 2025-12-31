@@ -113,6 +113,15 @@ main{position:relative;z-index:2;height:100vh;display:flex;align-items:center;ju
   letter-spacing:-0.3px;
 }
 
+/* estilo para la fecha/hora que aparece debajo del premio */
+.prize-date{
+  margin:8px 0 12px 0;
+  font-size:13px;
+  color: rgba(43,31,0,0.78); /* tono oscuro acorde al modal */
+  opacity:0.92;
+  font-weight:600;
+}
+
 /* button */
 .btn-primary{
   display:inline-block;
