@@ -132,7 +132,6 @@ main{position:relative;z-index:2;height:100vh;display:flex;align-items:center;ju
 /* small screens */
 @media (max-width:820px){
   .page-header{
-    /* deja espacio seguro + 40px extra (ajusta 32..56 según prefieras) */
     top: calc(env(safe-area-inset-top, 0px) + 40px);
   }
   .page-header h1{ font-size:18px; }
@@ -262,5 +261,5 @@ main{position:relative;z-index:2;height:100vh;display:flex;align-items:center;ju
 /* Ocultar logo hasta que lo movamos al footer */
 .hide-until-bottom{ display: none !important; }
 
-/* Cuando el logo ya está en #bottom-logo-container se aplicará el estilo normal definido más arriba */
-#bottom-logo-container img{ display: block; } /* ya tienes otras reglas; esta asegura que se muestre */
+/* Asegurar que el logo muestre cuando esté en el footer */
+#bottom-logo-container img{ display: block; }
