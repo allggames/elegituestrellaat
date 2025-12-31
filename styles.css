@@ -155,3 +155,106 @@ main{position:relative;z-index:2;height:100vh;display:flex;align-items:center;ju
   .ground-shadow{ display:none; }
   .spark{ display:none; } /* reduce animation load */
 }
+
+/* ------------------ Splash screen ------------------ */
+#splash {
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: linear-gradient(180deg, rgba(2,8,19,1) 0%, rgba(3,18,34,1) 100%);
+  overflow:hidden;
+  transition:opacity .45s ease, visibility .45s ease;
+  opacity:1;
+  visibility:visible;
+}
+
+#splash.hidden { opacity:0; visibility:hidden; pointer-events:none; }
+
+#splash-stars {
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+
+/* star item (emoji) */
+.splash-star {
+  position:absolute;
+  font-size:14px;
+  opacity:0.9;
+  transform: translateY(0);
+  animation: floatStar linear infinite;
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,0.55));
+}
+@keyframes floatStar {
+  from { transform: translateY(0) scale(1); opacity:0.9; }
+  50% { transform: translateY(-8px) scale(1.08); opacity:1; }
+  to { transform: translateY(0) scale(1); opacity:0.9; }
+}
+
+/* central splash content */
+#splash-content {
+  position:relative;
+  z-index:2;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:18px;
+  padding: 12px 18px;
+  pointer-events:none;
+}
+
+#splash-content #logo2 {
+  width: clamp(180px, 36vw, 420px);
+  height: auto;
+  display:block;
+  filter: drop-shadow(0 18px 30px rgba(0,0,0,0.6));
+  transform-origin:center;
+}
+
+/* loading bar */
+#loading-wrap { width: min(460px, 84vw); text-align:center; pointer-events:none; margin-top:6px; }
+#loading-label { color: #fff; font-weight:600; margin-bottom:8px; font-family: "Lexend", system-ui, -apple-system; font-size:14px; text-shadow: 0 4px 12px rgba(0,0,0,0.45); }
+#loading-bar {
+  width:100%; height:12px; border-radius:999px; background:rgba(255,255,255,0.07); overflow:hidden;
+  box-shadow: inset 0 -6px 14px rgba(0,0,0,0.25);
+}
+#loading-progress {
+  height:100%;
+  width:0%;
+  background: linear-gradient(90deg, #ffd75a 0%, #ffb84d 60%, #f6d06a 100%);
+  border-radius:999px;
+  box-shadow: 0 6px 20px rgba(246,208,106,0.18);
+  transition: width .32s ease;
+}
+
+/* bottom logo container (where we will move #logo) */
+#bottom-logo-container {
+  position:fixed;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:20px;
+  z-index:800;
+  pointer-events:none;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+}
+#bottom-logo-container img {
+  width: clamp(120px, 18vw, 260px);
+  height:auto;
+  filter: drop-shadow(0 8px 20px rgba(0,0,0,0.45));
+  transform: translateY(0);
+}
+
+/* ensure splash adapts for mobiles */
+@media (max-width:420px) {
+  #splash-content { gap:12px; }
+  #splash-content #logo2 { width: clamp(130px, 48vw, 260px); }
+  #loading-label{ font-size:13px; }
+  #loading-bar{ height:10px; }
+  #bottom-logo-container{ bottom:12px; }
+}
