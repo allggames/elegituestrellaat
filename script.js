@@ -1,8 +1,6 @@
 // script.js
-// Versión limpia y simple: cada estrella recibe sus propios paths (halo, body, rim) y un óvalo blanco
-// detrás (white-halo) — todo alineado. Mantiene flip, pop, modal de premio, confetti, sparkles y canvas sky.
-// He agregado SOLO lo necesario para: asignar premios aleatoriamente a cada estrella (persistente por día)
-// y bloquear la selección una vez elegida hasta el día siguiente (persistencia en localStorage).
+// Versión corregida y unificada: mantiene el splash (una sola vez), asignación de premios,
+// bloqueo por día, sonido, stars, canvas y demás.
 
 (function () {
   'use strict';
@@ -26,148 +24,85 @@
     return d;
   }
 
-  /* ---------- Setup: asigna d y transforms a cada SVG de estrella ---------- */
-  // Reemplaza la función setupStars() actual por esta en script.js
-  function setupStars() {
-    const starEls = Array.from(document.querySelectorAll('.star'));
-    if (!starEls.length) return;
+  /* ------------------ Splash loader (insert near top of script.js) ------------------ */
+  (function splashInit() {
+    // Config
+    const STAR_COUNT = 46;        // cantidad de estrellas en pantalla
+    const LOAD_MS = 1400;        // duración aproximada de "carga" (ms)
 
-    // Base geométrica (si quieres cambiar tamaño base, modifica outer/inner)
-    const cx = 60, cy = 60;
-    const outer = 46, inner = 20;
-    const d = makeStarPath(cx, cy, 5, outer, inner);
-
-    starEls.forEach((btn, i) => {
-      const svg = btn.querySelector('.star-svg');
-      if (!svg) return;
-
-      // Elementos dentro del SVG (debes tenerlos en tu HTML: .halo, .body, .rim, .white-halo)
-      const halo = svg.querySelector('.halo');       // path usado como halo/difuso
-      const body = svg.querySelector('.body');       // path principal (amarillo)
-      const rim = svg.querySelector('.rim');         // rim / sub-outline
-      const white = svg.querySelector('.white-halo'); // ellipse blanco detrás
-
-      // Asignamos la misma geometría a cada path
-      if (halo) halo.setAttribute('d', d);
-      if (body) body.setAttribute('d', d);
-      if (rim)  rim.setAttribute('d', d);
-
-      // Aquí aplicamos EXACTAMENTE las transformaciones que escribiste en la consola:
-      if (i === 0 || i === 2) {
-        // estrellas laterales (pequeñas)
-        // body = scale(1.5, 1.5)
-        if (body) body.setAttribute('transform', `translate(${cx} ${cy}) scale(1.5 1.5) translate(${-cx} ${-cy})`);
-        // rim (la "estrella más chica del centro de los costados") -> la dejás en scale(1)
-        if (rim)  rim.setAttribute('transform', `translate(${cx} ${cy}) scale(1 1) translate(${-cx} ${-cy})`);
-        // halo ligeramente más grande (opcional). Mantengo coherencia:
-        if (halo) halo.setAttribute('transform', `translate(${cx} ${cy}) scale(1.5) translate(${-cx} ${-cy})`);
-      } else if (i === 1) {
-        // estrella central (grande)
-        if (body) body.setAttribute('transform', `translate(${cx} ${cy}) scale(1.80 1.80) translate(${-cx} ${-cy})`);
-        // dentro de la estrella central, el "pequeño centro" que pediste lo interpreto como rim/inner:
-        if (rim) rim.setAttribute('transform', `translate(${cx} ${cy}) scale(1.2 1.2) translate(${-cx} ${-cy})`);
-        // halo central más grande
-        if (halo) halo.setAttribute('transform', `translate(${cx} ${cy}) scale(1.8) translate(${-cx} ${-cy})`);
+    // helper: crea estrellas emoji dentro de #splash-stars
+    function createSplashStars() {
+      const container = document.getElementById('splash-stars');
+      if (!container) return;
+      container.innerHTML = '';
+      for (let i=0;i<STAR_COUNT;i++){
+        const s = document.createElement('div');
+        s.className = 'splash-star';
+        s.textContent = '🌟';
+        // posicion aleatoria
+        s.style.left = (Math.random() * 100) + '%';
+        s.style.top = (Math.random() * 100) + '%';
+        // tamaño y duración aleatoria
+        const size = 10 + Math.round(Math.random()*26); // px
+        s.style.fontSize = size + 'px';
+        const dur = 6 + Math.random()*8;
+        s.style.animationDuration = dur.toFixed(2) + 's';
+        s.style.opacity = (0.5 + Math.random()*0.6).toFixed(2);
+        s.style.animationDelay = (Math.random()*2).toFixed(2) + 's';
+        container.appendChild(s);
       }
+    }
 
-      // White halo (óvalo blanco) atrás con cx=60,cy=60,rx=60,ry=60 (tú pediste 60 para cada)
-      if (white) {
-        white.setAttribute('cx', '60');
-        white.setAttribute('cy', '60');
-        white.setAttribute('rx', '60');
-        white.setAttribute('ry', '60');
-        white.setAttribute('opacity', '0.12');    // ajusta opacidad si hace falta
-        white.style.filter = 'blur(6px)';         // efecto blur para que quede "halo"
+    // Mover #logo (si existe) hacia el footer #bottom-logo-container
+    function placeBottomLogo() {
+      const logo = document.getElementById('logo');
+      const container = document.getElementById('bottom-logo-container');
+      if (logo && container) {
+        try {
+          // mostrarse si estaba oculto por la clase
+          logo.classList.remove('hide-until-bottom');
+          logo.style.display = ''; // limpia inline style si existe
+          container.appendChild(logo);
+          container.setAttribute('aria-hidden','false');
+        } catch(e) { /* ignore */ }
       }
+    }
+
+    // Simula progreso y luego oculta el splash
+    function runLoaderThenHide() {
+      const progress = document.getElementById('loading-progress');
+      const splash = document.getElementById('splash');
+      if (!progress || !splash) return;
+
+      const start = performance.now();
+      function tick(now) {
+        const t = Math.min(1, (now - start) / LOAD_MS);
+        const eased = (1 - Math.cos(Math.PI * t)) / 2; // ease in/out
+        const percent = Math.round(eased * 100);
+        progress.style.width = percent + '%';
+        if (t < 1) requestAnimationFrame(tick);
+        else {
+          // pequeño delay para que se vea 100%
+          setTimeout(()=> {
+            // hide splash with fade
+            splash.classList.add('hidden');
+            // luego de ocultar, mover/mostrar el logo inferior
+            placeBottomLogo();
+          }, 280);
+        }
+      }
+      requestAnimationFrame(tick);
+    }
+
+    // init on DOM ready
+    document.addEventListener('DOMContentLoaded', () => {
+      createSplashStars();
+      window.addEventListener('resize', createSplashStars);
+      // start loader after tiny delay so everything paints
+      setTimeout(runLoaderThenHide, 160);
     });
-  }
+  })();
 
-/* ------------------ Splash loader (insert near top of script.js) ------------------ */
-(function splashInit() {
-  // Config
-  const STAR_COUNT = 46;        // cantidad de estrellas en pantalla
-  const LOAD_MS = 1400;        // duración aproximada de "carga" (ms)
-
-  // helper: crea estrellas emoji dentro de #splash-stars
-  function createSplashStars() {
-    const container = document.getElementById('splash-stars');
-    if (!container) return;
-    container.innerHTML = '';
-    const w = container.clientWidth || window.innerWidth;
-    const h = container.clientHeight || window.innerHeight;
-    for (let i=0;i<STAR_COUNT;i++){
-      const s = document.createElement('div');
-      s.className = 'splash-star';
-      s.textContent = '🌟';
-      // posicion aleatoria
-      const left = Math.random() * 100;
-      const top = Math.random() * 100;
-      s.style.left = left + '%';
-      s.style.top = top + '%';
-      // tamaño y duración aleatoria
-      const size = 10 + Math.round(Math.random()*26); // px
-      s.style.fontSize = size + 'px';
-      const dur = 6 + Math.random()*8;
-      s.style.animationDuration = dur.toFixed(2) + 's';
-      s.style.opacity = (0.5 + Math.random()*0.6).toFixed(2);
-      // ligera variación en delay
-      s.style.animationDelay = (Math.random()*2).toFixed(2) + 's';
-      container.appendChild(s);
-    }
-  }
-
-  // Simula progreso y luego oculta el splash
-  function runLoaderThenHide() {
-    const progress = document.getElementById('loading-progress');
-    const splash = document.getElementById('splash');
-    if (!progress || !splash) return;
-
-    // animación del progreso (lerp)
-    const start = performance.now();
-    function tick(now) {
-      const t = Math.min(1, (now - start) / LOAD_MS);
-      const eased = (1 - Math.cos(Math.PI * t)) / 2; // ease in/out
-      const percent = Math.round(eased * 100);
-      progress.style.width = percent + '%';
-      if (t < 1) requestAnimationFrame(tick);
-      else {
-        // pequeño delay para que se vea 100%
-        setTimeout(()=> {
-          // hide splash with fade
-          splash.classList.add('hidden');
-          // luego de ocultar, mover/mostrar el logo inferior
-          placeBottomLogo();
-        }, 280);
-      }
-    }
-    requestAnimationFrame(tick);
-  }
-
-// Mover #logo (si existe) hacia el footer #bottom-logo-container
-function placeBottomLogo() {
-  const logo = document.getElementById('logo');
-  const container = document.getElementById('bottom-logo-container');
-  if (logo && container) {
-    try {
-      // asegurarnos de que se muestre (si tenía display:none por la clase)
-      logo.classList.remove('hide-until-bottom');
-      logo.style.display = ''; // limpia inline style si existe
-      container.appendChild(logo);
-      container.setAttribute('aria-hidden','false');
-    } catch(e) { /* ignore */ }
-  }
-}
-
-  // init on DOM ready
-  document.addEventListener('DOMContentLoaded', () => {
-    // create stars (and also on resize)
-    createSplashStars();
-    window.addEventListener('resize', createSplashStars);
-    // start loader after tiny delay so everything paints
-    setTimeout(runLoaderThenHide, 160);
-  });
-})();
-  
   /* ------------------------------------------------------------------ */
   /*  ADICIONES para: asignación aleatoria de premios y bloqueo por día  */
   /* ------------------------------------------------------------------ */
@@ -212,9 +147,6 @@ function placeBottomLogo() {
         }
       }
     } catch(e){}
-    // create new
-    // NOTE: 'prizes' array exists later in script; we'll use it via closure (it's defined below). To avoid hoisting issues,
-    // if prizes isn't defined yet we fallback to a simple labels set.
     const pool = (typeof prizes !== 'undefined' && Array.isArray(prizes) && prizes.length>0) ? prizes : [{label:'100%'},{label:'150%'},{label:'200%'}];
     const assigned = sampleWeightedNoReplace(pool, count);
     const payload = { date: todayKey(), assignments: assigned };
@@ -277,27 +209,67 @@ function placeBottomLogo() {
     explodeConfetti();
   }
 
-// Muestra un aviso cuando ya se reclamó hoy (no dispara confetti)
-function showClaimed(prize) {
-  const prizeText = document.getElementById('prize-text');
-  const modal = document.getElementById('result');
-  // título del modal (si existe el elemento con id modal-title)
-  const titleEl = document.getElementById('modal-title') || (modal && modal.querySelector('h2'));
-  if (titleEl) titleEl.textContent = 'Ya reclamaste';
-  if (prizeText) prizeText.textContent = (prize && prize.label) ? prize.label : 'Premio reclamado';
-  if (modal) {
-    modal.classList.remove('hidden');
-    modal.classList.add('show');
+  // Muestra un aviso cuando ya se reclamó hoy (no dispara confetti)
+  function showClaimed(prize) {
+    const prizeText = document.getElementById('prize-text');
+    const modal = document.getElementById('result');
+    const titleEl = document.getElementById('modal-title') || (modal && modal.querySelector('h2'));
+    if (titleEl) titleEl.textContent = 'Ya reclamaste';
+    if (prizeText) prizeText.textContent = (prize && prize.label) ? prize.label : 'Premio reclamado';
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.classList.add('show');
+    }
   }
-  // NO llamar a explodeConfetti() — solo aviso
-}
-  
+
   function hidePrize() {
     const modal = document.getElementById('result');
     if (modal) modal.classList.remove('show');
     setTimeout(() => { if (modal) modal.classList.add('hidden'); }, 240);
     const confettiContainer = document.getElementById('confetti');
     if (confettiContainer) confettiContainer.innerHTML = '';
+  }
+
+  /* ---------- setupStars: asigna d y transforms a cada SVG de estrella ---------- */
+  function setupStars() {
+    const starEls = Array.from(document.querySelectorAll('.star'));
+    if (!starEls.length) return;
+
+    const cx = 60, cy = 60;
+    const outer = 46, inner = 20;
+    const d = makeStarPath(cx, cy, 5, outer, inner);
+
+    starEls.forEach((btn, i) => {
+      const svg = btn.querySelector('.star-svg');
+      if (!svg) return;
+      const halo = svg.querySelector('.halo');
+      const body = svg.querySelector('.body');
+      const rim = svg.querySelector('.rim');
+      const white = svg.querySelector('.white-halo');
+
+      if (halo) halo.setAttribute('d', d);
+      if (body) body.setAttribute('d', d);
+      if (rim) rim.setAttribute('d', d);
+
+      if (i === 0 || i === 2) {
+        if (body) body.setAttribute('transform', `translate(${cx} ${cy}) scale(1.5 1.5) translate(${-cx} ${-cy})`);
+        if (rim)  rim.setAttribute('transform', `translate(${cx} ${cy}) scale(1 1) translate(${-cx} ${-cy})`);
+        if (halo) halo.setAttribute('transform', `translate(${cx} ${cy}) scale(1.5) translate(${-cx} ${-cy})`);
+      } else if (i === 1) {
+        if (body) body.setAttribute('transform', `translate(${cx} ${cy}) scale(1.80 1.80) translate(${-cx} ${-cy})`);
+        if (rim) rim.setAttribute('transform', `translate(${cx} ${cy}) scale(1.2 1.2) translate(${-cx} ${-cy})`);
+        if (halo) halo.setAttribute('transform', `translate(${cx} ${cy}) scale(1.8) translate(${-cx} ${-cy})`);
+      }
+
+      if (white) {
+        white.setAttribute('cx', '60');
+        white.setAttribute('cy', '60');
+        white.setAttribute('rx', '60');
+        white.setAttribute('ry', '60');
+        white.setAttribute('opacity', '0.12');
+        white.style.filter = 'blur(6px)';
+      }
+    });
   }
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -316,17 +288,15 @@ function showClaimed(prize) {
       btn.dataset.assignedPrize = JSON.stringify(prize);
     });
 
-// --- NEW: check if user already selected today ---
-const existing = loadSelection();
-if (existing) {
-  // lock UI and mark chosen star
-  locked = true;
-  disableAllStars();
-  const chosenBtn = starButtons[existing.index];
-  if (chosenBtn) chosenBtn.classList.add('selected');
-  // mostrar aviso con el premio reclamado (sin confetti)
-  showClaimed(existing.prize);
-}
+    // --- NEW: check if user already selected today ---
+    const existing = loadSelection();
+    if (existing) {
+      locked = true;
+      disableAllStars();
+      const chosenBtn = starButtons[existing.index];
+      if (chosenBtn) chosenBtn.classList.add('selected');
+      showClaimed(existing.prize);
+    }
 
     // click handlers (flip + pop + prize)
     starButtons.forEach((btn, idx) => {
@@ -338,19 +308,16 @@ if (existing) {
         void btn.offsetWidth; // reflow
         btn.classList.add('pop','flip');
 
-// reproducir sonido inmediatamente (aprobado por el gesto del usuario)
-const audio = document.getElementById('claim-sound');
-if (audio) {
-  try {
-    audio.currentTime = 0;
-    audio.volume = 0.9; // ajustar volumen 0.0 - 1.0
-    const p = audio.play();
-    if (p && p.catch) p.catch(()=>{}); // ignorar error si algo falla
-  } catch(e){
-    // no romper la UI si falla
-    console.warn('Audio play failed', e);
-  }
-}
+        // reproducir sonido inmediatamente (aprobado por el gesto del usuario)
+        const audio = document.getElementById('claim-sound');
+        if (audio) {
+          try {
+            audio.currentTime = 0;
+            audio.volume = 0.9;
+            const p = audio.play();
+            if (p && p.catch) p.catch(()=>{});
+          } catch(e) { console.warn('Audio play failed', e); }
+        }
 
         // Use the assigned prize (persisted per day)
         let prize;
@@ -368,14 +335,12 @@ if (audio) {
     if (closeBtn) {
       closeBtn.addEventListener('click', () => {
         hidePrize();
-        // keep UI locked until next day (per requirement)
       });
     }
 
     // landing animation: quitar clase dropping y desbloquear después if not already selected
     setTimeout(() => {
       document.body.classList.remove('dropping');
-      // unlock only if there's no persisted selection
       if (!loadSelection()) {
         setTimeout(() => { locked = false; }, 600);
       }
