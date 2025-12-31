@@ -13,60 +13,21 @@
 <body class="dropping">
   <canvas id="sky"></canvas>
 
-<!-- Splash / pantalla de inicio -->
-<div id="splash" aria-hidden="false">
-  <div id="splash-stars" aria-hidden="true"><!-- stars will be injected here --></div>
+  <!-- Splash / pantalla de inicio (UN SOLO BLOQUE) -->
+  <div id="splash" aria-hidden="false">
+    <div id="splash-stars" aria-hidden="true"><!-- stars will be injected here --></div>
 
-  <div id="splash-content" role="dialog" aria-label="Pantalla de carga">
-    <!-- logo2: reemplaza src por la ruta real de tu imagen logo2 -->
-    <img id="logo2" src="images/logo2.png" alt="Logo" />
-    <div id="loading-wrap" aria-hidden="true">
-      <div id="loading-label">Juego cargando</div>
-      <div id="loading-bar">
-        <div id="loading-progress" style="width:0%"></div>
+    <div id="splash-content" role="dialog" aria-label="Pantalla de carga">
+      <!-- Ajustá la ruta si tus imágenes están en otra carpeta -->
+      <img id="logo2" src="images/logo2.png" alt="logo2" />
+      <div id="loading-wrap" aria-hidden="true">
+        <div id="loading-label">Juego cargando</div>
+        <div id="loading-bar">
+          <div id="loading-progress" style="width:0%"></div>
+        </div>
       </div>
     </div>
   </div>
-</div>
-
-<!-- coloca esto justo después de <body> o en el lugar que sugerimos antes -->
-<!-- Splash / pantalla de inicio -->
-<div id="splash" aria-hidden="false">
-  <div id="splash-stars" aria-hidden="true"><!-- stars will be injected here --></div>
-
-  <div id="splash-content" role="dialog" aria-label="Pantalla de carga">
-    <!-- usa la ruta real dentro de tu repo: images/logo2.png -->
-    <img id="logo2" src="images/logo2.png" alt="Logo principal" />
-    <div id="loading-wrap" aria-hidden="true">
-      <div id="loading-label">Juego cargando</div>
-      <div id="loading-bar">
-        <div id="loading-progress" style="width:0%"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- colocar un elemento logo en el DOM que luego moveremos al footer -->
-<!-- añade esto dentro de <main> (o donde prefieras) -->
-<img id="logo" src="images/logo.png" alt="logo" class="hide-until-bottom" />
-
-<!-- Contenedor para colocar el logo en la sección inferior una vez cargado -->
-<footer id="bottom-logo-container" aria-hidden="true"></footer>
-  <!-- defs (filters / gradients kept minimal) -->
-  <svg width="0" height="0" style="position:absolute;pointer-events:none" aria-hidden="true">
-    <defs>
-      <filter id="haloBlur" x="-200%" y="-200%" width="500%" height="500%" filterUnits="userSpaceOnUse">
-        <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="g"/>
-        <feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-
-      <linearGradient id="gradA" x1="0" x2="1">
-        <stop offset="0%" stop-color="#fff8d8"/>
-        <stop offset="60%" stop-color="#ffd75a"/>
-        <stop offset="100%" stop-color="#ffb000"/>
-      </linearGradient>
-    </defs>
-  </svg>
 
   <!-- HEADER / TITLE (fixed top, centered) -->
   <header class="page-header" role="banner">
@@ -74,6 +35,9 @@
   </header>
 
   <main>
+    <!-- hidden logo that will be moved to footer after splash -->
+    <img id="logo" src="images/logo.png" alt="logo" class="hide-until-bottom" />
+
     <div class="stars" role="list" aria-label="Elige una estrella">
       <button class="star final-1" data-index="0" aria-label="Estrella izquierda" role="listitem">
         <div class="star-inner" aria-hidden="true">
@@ -123,12 +87,30 @@
     <div id="confetti" aria-hidden="true"></div>
   </main>
 
-  <script src="script.js"></script>
+  <!-- footer container where logo will be moved -->
+  <footer id="bottom-logo-container" aria-hidden="true"></footer>
 
-<audio id="claim-sound" preload="auto" aria-hidden="true">
-  <source src="sound/claim.mp3" type="audio/mpeg">
-  <!-- si tienes .ogg, añade también: <source src="sound/claim.ogg" type="audio/ogg"> -->
-</audio>
-  
+  <!-- defs (filters / gradients kept minimal) -->
+  <svg width="0" height="0" style="position:absolute;pointer-events:none" aria-hidden="true">
+    <defs>
+      <filter id="haloBlur" x="-200%" y="-200%" width="500%" height="500%" filterUnits="userSpaceOnUse">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="g"/>
+        <feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+
+      <linearGradient id="gradA" x1="0" x2="1">
+        <stop offset="0%" stop-color="#fff8d8"/>
+        <stop offset="60%" stop-color="#ffd75a"/>
+        <stop offset="100%" stop-color="#ffb000"/>
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <!-- audio -->
+  <audio id="claim-sound" preload="auto" aria-hidden="true">
+    <source src="sound/claim.mp3" type="audio/mpeg">
+  </audio>
+
+  <script src="script.js"></script>
 </body>
 </html>
