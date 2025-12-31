@@ -239,34 +239,23 @@ main{position:relative;z-index:2;height:100vh;display:flex;align-items:center;ju
 }
 
 /* bottom logo container (where we will move #logo) */
-/* UPDATED: placed below main/stars (z-index lower) and animated */
 #bottom-logo-container {
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 5vh;              /* responsive distance from bottom */
-  z-index: 1;               /* IMPORTANT: lower than main (z-index:2) so it sits under the stars */
-  pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding-bottom: env(safe-area-inset-bottom, 8px);
+  position:fixed;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:20px;
+  z-index:800;
+  pointer-events:none;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
 }
 #bottom-logo-container img {
-  width: clamp(100px, 16vw, 220px);
-  height: auto;
-  max-height: 12vh;
+  width: clamp(120px, 18vw, 260px);
+  height:auto;
   filter: drop-shadow(0 8px 20px rgba(0,0,0,0.45));
-  transform: translateY(8px);
-  opacity: 0;
-  transition: transform .45s cubic-bezier(.2,.9,.2,1), opacity .45s ease;
-  pointer-events: auto;
-}
-/* class added by JS when logo is placed to animate in */
-#bottom-logo-container img.logo-visible {
   transform: translateY(0);
-  opacity: 1;
 }
 
 /* ensure splash adapts for mobiles */
@@ -281,5 +270,5 @@ main{position:relative;z-index:2;height:100vh;display:flex;align-items:center;ju
 /* Ocultar logo hasta que lo movamos al footer */
 .hide-until-bottom{ display: none !important; }
 
-/* Asegurar que el logo muestre cuando esté en el footer (fall back) */
+/* Asegurar que el logo muestre cuando esté en el footer */
 #bottom-logo-container img{ display: block; }
