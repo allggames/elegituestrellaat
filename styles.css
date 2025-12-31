@@ -258,3 +258,9 @@ main{position:relative;z-index:2;height:100vh;display:flex;align-items:center;ju
   #loading-bar{ height:10px; }
   #bottom-logo-container{ bottom:12px; }
 }
+
+/* Ocultar logo hasta que lo movamos al footer */
+.hide-until-bottom{ display: none !important; }
+
+/* Cuando el logo ya está en #bottom-logo-container se aplicará el estilo normal definido más arriba */
+#bottom-logo-container img{ display: block; } /* ya tienes otras reglas; esta asegura que se muestre */
