@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Elige una estrella</title>
+
+  <!-- Lexend font -->
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="dropping">
+  <canvas id="sky"></canvas>
+
+  <!-- defs (filters / gradients kept minimal) -->
+  <svg width="0" height="0" style="position:absolute;pointer-events:none" aria-hidden="true">
+    <defs>
+      <filter id="haloBlur" x="-200%" y="-200%" width="500%" height="500%" filterUnits="userSpaceOnUse">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="g"/>
+        <feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+
+      <linearGradient id="gradA" x1="0" x2="1">
+        <stop offset="0%" stop-color="#fff8d8"/>
+        <stop offset="60%" stop-color="#ffd75a"/>
+        <stop offset="100%" stop-color="#ffb000"/>
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <!-- HEADER / TITLE (fixed top, centered) -->
+  <header class="page-header" role="banner">
+    <h1>Elige una estrella</h1>
+  </header>
+
+  <main>
+    <div class="stars" role="list" aria-label="Elige una estrella">
+      <button class="star final-1" data-index="0" aria-label="Estrella izquierda" role="listitem">
+        <div class="star-inner" aria-hidden="true">
+          <svg viewBox="0 0 120 120" class="star-svg" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+            <ellipse class="white-halo" cx="60" cy="28" rx="26" ry="12" />
+            <path class="halo" d=""></path>
+            <path class="body" d=""></path>
+            <path class="rim" d=""></path>
+          </svg>
+          <div class="ground-shadow" aria-hidden="true"></div>
+        </div>
+      </button>
+
+      <button class="star final-2" data-index="1" aria-label="Estrella central" role="listitem">
+        <div class="star-inner" aria-hidden="true">
+          <svg viewBox="0 0 120 120" class="star-svg" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+            <ellipse class="white-halo" cx="60" cy="26" rx="30" ry="14" />
+            <path class="halo" d=""></path>
+            <path class="body" d=""></path>
+            <path class="rim" d=""></path>
+          </svg>
+          <div class="ground-shadow" aria-hidden="true"></div>
+        </div>
+      </button>
+
+      <button class="star final-3" data-index="2" aria-label="Estrella derecha" role="listitem">
+        <div class="star-inner" aria-hidden="true">
+          <svg viewBox="0 0 120 120" class="star-svg" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+            <ellipse class="white-halo" cx="60" cy="28" rx="26" ry="12" />
+            <path class="halo" d=""></path>
+            <path class="body" d=""></path>
+            <path class="rim" d=""></path>
+          </svg>
+          <div class="ground-shadow" aria-hidden="true"></div>
+        </div>
+      </button>
+    </div>
+
+    <div id="result" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-content">
+        <h2 id="modal-title">¡Ganaste!</h2>
+        <p id="prize-text"></p>
+        <button id="close-btn" class="btn-primary">Cerrar</button>
+      </div>
+    </div>
+
+    <div id="confetti" aria-hidden="true"></div>
+  </main>
+
+  <script src="script.js"></script>
+
+<audio id="claim-sound" preload="auto" aria-hidden="true">
+  <source src="sound/claim.mp3" type="audio/mpeg">
+  <!-- si tienes .ogg, añade también: <source src="sound/claim.ogg" type="audio/ogg"> -->
+</audio>
+  
+</body>
+</html>
