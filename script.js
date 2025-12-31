@@ -25,93 +25,106 @@
   }
 
   /* ------------------ Splash loader (insert near top of script.js) ------------------ */
-  (function splashInit() {
-    // Config
-    const STAR_COUNT = 46;        // cantidad de estrellas en pantalla
-    const LOAD_MS = 1400;        // duración aproximada de "carga" (ms)
+/* ------------------ Splash loader (robusto) ------------------ */
+(function splashInit() {
+  const STAR_COUNT = 46;    // cantidad de estrellas en pantalla
+  const LOAD_MS = 1400;     // duración aproximada de "carga" (ms)
+  const MAX_WAIT = 6000;    // fail-safe: max ms antes de forzar cierre
 
-    // helper: crea estrellas emoji dentro de #splash-stars
-    function createSplashStars() {
-      const container = document.getElementById('splash-stars');
-      if (!container) return;
-      container.innerHTML = '';
-      for (let i=0;i<STAR_COUNT;i++){
-        const s = document.createElement('div');
-        s.className = 'splash-star';
-        s.textContent = '🌟';
-        // posicion aleatoria
-        s.style.left = (Math.random() * 100) + '%';
-        s.style.top = (Math.random() * 100) + '%';
-        // tamaño y duración aleatoria
-        const size = 10 + Math.round(Math.random()*26); // px
-        s.style.fontSize = size + 'px';
-        const dur = 6 + Math.random()*8;
-        s.style.animationDuration = dur.toFixed(2) + 's';
-        s.style.opacity = (0.5 + Math.random()*0.6).toFixed(2);
-        s.style.animationDelay = (Math.random()*2).toFixed(2) + 's';
-        container.appendChild(s);
+  function createSplashStars() {
+    const container = document.getElementById('splash-stars');
+    if (!container) return;
+    container.innerHTML = '';
+    for (let i = 0; i < STAR_COUNT; i++) {
+      const s = document.createElement('div');
+      s.className = 'splash-star';
+      s.textContent = '🌟';
+      s.style.left = (Math.random() * 100) + '%';
+      s.style.top = (Math.random() * 100) + '%';
+      const size = 10 + Math.round(Math.random() * 26);
+      s.style.fontSize = size + 'px';
+      const dur = 6 + Math.random() * 8;
+      s.style.animationDuration = dur.toFixed(2) + 's';
+      s.style.opacity = (0.5 + Math.random() * 0.6).toFixed(2);
+      s.style.animationDelay = (Math.random() * 2).toFixed(2) + 's';
+      container.appendChild(s);
+    }
+  }
+
+  function placeBottomLogo() {
+    const logo = document.getElementById('logo');
+    const container = document.getElementById('bottom-logo-container');
+    if (logo && container) {
+      try {
+        logo.classList.remove('hide-until-bottom');
+        logo.style.display = '';
+        logo.classList.remove('logo-visible');
+        container.appendChild(logo);
+        container.setAttribute('aria-hidden', 'false');
+        void logo.offsetWidth;
+        setTimeout(() => logo.classList.add('logo-visible'), 60);
+      } catch (e) { /* ignore */ }
+    }
+  }
+
+  function runLoaderThenHide() {
+    const progress = document.getElementById('loading-progress');
+    const splash = document.getElementById('splash');
+    if (!progress || !splash) return;
+
+    const start = performance.now();
+    let rafId = null;
+
+    function tick(now) {
+      const t = Math.min(1, (now - start) / LOAD_MS);
+      const eased = (1 - Math.cos(Math.PI * t)) / 2;
+      const percent = Math.round(eased * 100);
+      progress.style.width = percent + '%';
+      if (t < 1) {
+        rafId = requestAnimationFrame(tick);
+      } else {
+        // pequeño delay para apreciar 100%
+        setTimeout(() => {
+          try { splash.classList.add('hidden'); } catch(e){}
+          placeBottomLogo();
+        }, 280);
       }
     }
 
-    // Mover #logo (si existe) hacia el footer #bottom-logo-container
-    // UPDATED: apply animated class after moving so it appears in the bottom area (below stars)
-    function placeBottomLogo() {
-      const logo = document.getElementById('logo');
-      const container = document.getElementById('bottom-logo-container');
-      if (logo && container) {
-        try {
-          // mostrarse si estaba oculto por la clase
-          logo.classList.remove('hide-until-bottom');
-          logo.style.display = ''; // limpia inline style si existe
+    // start animation
+    rafId = requestAnimationFrame(tick);
 
-          // prepare for animation
-          logo.classList.remove('logo-visible');
+    // fail-safe: si algo falla, forzamos cierre pasado MAX_WAIT
+    const fallback = setTimeout(() => {
+      if (rafId) try { cancelAnimationFrame(rafId); } catch(e){}
+      try { splash.classList.add('hidden'); } catch(e){}
+      placeBottomLogo();
+    }, MAX_WAIT);
 
-          // append to footer container
-          container.appendChild(logo);
-          container.setAttribute('aria-hidden','false');
-
-          // force reflow and then add class to trigger transition
-          void logo.offsetWidth;
-          setTimeout(() => logo.classList.add('logo-visible'), 60);
-        } catch(e) { /* ignore */ }
+    // clear fallback if normal finish happens earlier
+    // we observe width transitions to detect completion
+    progress.addEventListener('transitionend', function onEnd() {
+      if (progress.style.width === '100%') {
+        clearTimeout(fallback);
+        progress.removeEventListener('transitionend', onEnd);
       }
-    }
-
-    // Simula progreso y luego oculta el splash
-    function runLoaderThenHide() {
-      const progress = document.getElementById('loading-progress');
-      const splash = document.getElementById('splash');
-      if (!progress || !splash) return;
-
-      const start = performance.now();
-      function tick(now) {
-        const t = Math.min(1, (now - start) / LOAD_MS);
-        const eased = (1 - Math.cos(Math.PI * t)) / 2; // ease in/out
-        const percent = Math.round(eased * 100);
-        progress.style.width = percent + '%';
-        if (t < 1) requestAnimationFrame(tick);
-        else {
-          // pequeño delay para que se vea 100%
-          setTimeout(()=> {
-            // hide splash with fade
-            splash.classList.add('hidden');
-            // luego de ocultar, mover/mostrar el logo inferior
-            placeBottomLogo();
-          }, 280);
-        }
-      }
-      requestAnimationFrame(tick);
-    }
-
-    // init on DOM ready
-    document.addEventListener('DOMContentLoaded', () => {
-      createSplashStars();
-      window.addEventListener('resize', createSplashStars);
-      // start loader after tiny delay so everything paints
-      setTimeout(runLoaderThenHide, 160);
     });
-  })();
+  }
+
+  function initSplash() {
+    createSplashStars();
+    window.addEventListener('resize', createSplashStars);
+    // pequeño delay para que pinte todo y luego iniciar loader
+    setTimeout(runLoaderThenHide, 160);
+  }
+
+  // Init now or on DOMContentLoaded if still loading
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSplash, { once: true });
+  } else {
+    initSplash();
+  }
+})();
 
   /* ------------------------------------------------------------------ */
   /*  ADICIONES para: asignación aleatoria de premios y bloqueo por día  */
