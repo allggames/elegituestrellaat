@@ -143,18 +143,20 @@
     requestAnimationFrame(tick);
   }
 
-  // Mover #logo (si existe) hacia el footer #bottom-logo-container
-  function placeBottomLogo() {
-    const logo = document.getElementById('logo');
-    const container = document.getElementById('bottom-logo-container');
-    if (logo && container) {
-      // detach from current parent and append
-      try {
-        container.appendChild(logo);
-        container.setAttribute('aria-hidden','false');
-      } catch(e) { /* ignore */ }
-    }
+// Mover #logo (si existe) hacia el footer #bottom-logo-container
+function placeBottomLogo() {
+  const logo = document.getElementById('logo');
+  const container = document.getElementById('bottom-logo-container');
+  if (logo && container) {
+    try {
+      // asegurarnos de que se muestre (si tenía display:none por la clase)
+      logo.classList.remove('hide-until-bottom');
+      logo.style.display = ''; // limpia inline style si existe
+      container.appendChild(logo);
+      container.setAttribute('aria-hidden','false');
+    } catch(e) { /* ignore */ }
   }
+}
 
   // init on DOM ready
   document.addEventListener('DOMContentLoaded', () => {
