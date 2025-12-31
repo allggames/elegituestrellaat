@@ -116,6 +116,16 @@
     return new Date().toISOString().slice(0,10);
   }
 
+  // formatea ISO a una cadena legible local (dd/mm/aaaa hh:mm)
+  function formatSavedAt(isoString) {
+    try {
+      const d = new Date(isoString);
+      return d.toLocaleString([], { year: 'numeric', month: '2-digit', day: '2-digit', hour:'2-digit', minute:'2-digit' });
+    } catch(e) {
+      return isoString || '';
+    }
+  }
+
   // sample weighted without replacement (simple)
   function sampleWeightedNoReplace(sourceArr, k) {
     const pool = sourceArr.map(x => ({...x}));
@@ -160,15 +170,17 @@
       const today = todayKey();
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (parsed && parsed.date === today) return parsed; // {date,index,prize}
+        if (parsed && parsed.date === today) return parsed; // {date,index,prize,savedAt}
       }
     } catch(e){}
     return null;
   }
 
+  // guarda la selección y devuelve el payload (incluye savedAt)
   function saveSelection(index, prize) {
-    const payload = { date: todayKey(), index, prize };
+    const payload = { date: todayKey(), index, prize, savedAt: new Date().toISOString() };
     localStorage.setItem(SELECT_KEY, JSON.stringify(payload));
+    return payload;
   }
 
   function disableAllStars() {
@@ -198,10 +210,23 @@
   let locked = true;
   function wait(ms) { return new Promise(res => setTimeout(res, ms)); }
 
-  function showPrize(prize) {
+  // showPrize ahora recibe optional savedAt y lo muestra en #prize-date
+  function showPrize(prize, savedAt) {
     const prizeText = document.getElementById('prize-text');
+    const prizeDate = document.getElementById('prize-date');
     const modal = document.getElementById('result');
+    const titleEl = document.getElementById('modal-title');
+    if (titleEl) titleEl.textContent = '¡Ganaste!';
     if (prizeText) prizeText.textContent = prize.label;
+    if (prizeDate) {
+      if (savedAt) {
+        prizeDate.textContent = 'Reclamado: ' + formatSavedAt(savedAt);
+        prizeDate.setAttribute('aria-hidden','false');
+      } else {
+        prizeDate.textContent = '';
+        prizeDate.setAttribute('aria-hidden','true');
+      }
+    }
     if (modal) {
       modal.classList.remove('hidden');
       modal.classList.add('show');
@@ -209,13 +234,24 @@
     explodeConfetti();
   }
 
-  // Muestra un aviso cuando ya se reclamó hoy (no dispara confetti)
-  function showClaimed(prize) {
+  // showClaimed ahora espera el objeto selection {date,index,prize,savedAt}
+  function showClaimed(selection) {
+    const prize = selection && selection.prize ? selection.prize : { label: 'Premio reclamado' };
     const prizeText = document.getElementById('prize-text');
+    const prizeDate = document.getElementById('prize-date');
     const modal = document.getElementById('result');
     const titleEl = document.getElementById('modal-title') || (modal && modal.querySelector('h2'));
     if (titleEl) titleEl.textContent = 'Ya reclamaste';
-    if (prizeText) prizeText.textContent = (prize && prize.label) ? prize.label : 'Premio reclamado';
+    if (prizeText) prizeText.textContent = prize.label;
+    if (prizeDate) {
+      if (selection && selection.savedAt) {
+        prizeDate.textContent = 'Fecha: ' + formatSavedAt(selection.savedAt);
+        prizeDate.setAttribute('aria-hidden','false');
+      } else {
+        prizeDate.textContent = '';
+        prizeDate.setAttribute('aria-hidden','true');
+      }
+    }
     if (modal) {
       modal.classList.remove('hidden');
       modal.classList.add('show');
@@ -295,7 +331,7 @@
       disableAllStars();
       const chosenBtn = starButtons[existing.index];
       if (chosenBtn) chosenBtn.classList.add('selected');
-      showClaimed(existing.prize);
+      showClaimed(existing); // pasamos el objeto entero para mostrar savedAt
     }
 
     // click handlers (flip + pop + prize)
@@ -324,10 +360,14 @@
         try { prize = JSON.parse(btn.dataset.assignedPrize); } catch(e) { prize = weightedRandom(prizes); }
 
         await wait(760);
-        showPrize(prize);
 
-        // persist selection for today and disable further choices
-        saveSelection(idx, prize);
+        // persist selection for today and get saved payload (with savedAt)
+        const payload = saveSelection(idx, prize);
+
+        // mostrar modal con la fecha guardada
+        showPrize(prize, payload.savedAt);
+
+        // disable further choices
         disableAllStars();
       });
     });
