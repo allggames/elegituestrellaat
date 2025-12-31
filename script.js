@@ -54,6 +54,7 @@
     }
 
     // Mover #logo (si existe) hacia el footer #bottom-logo-container
+    // UPDATED: apply animated class after moving so it appears in the bottom area (below stars)
     function placeBottomLogo() {
       const logo = document.getElementById('logo');
       const container = document.getElementById('bottom-logo-container');
@@ -62,8 +63,17 @@
           // mostrarse si estaba oculto por la clase
           logo.classList.remove('hide-until-bottom');
           logo.style.display = ''; // limpia inline style si existe
+
+          // prepare for animation
+          logo.classList.remove('logo-visible');
+
+          // append to footer container
           container.appendChild(logo);
           container.setAttribute('aria-hidden','false');
+
+          // force reflow and then add class to trigger transition
+          void logo.offsetWidth;
+          setTimeout(() => logo.classList.add('logo-visible'), 60);
         } catch(e) { /* ignore */ }
       }
     }
@@ -504,3 +514,4 @@
   requestAnimationFrame(draw);
 
 })();
+```
