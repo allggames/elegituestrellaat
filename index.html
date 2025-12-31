@@ -76,13 +76,16 @@
       </button>
     </div>
 
-    <div id="result" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-      <div class="modal-content">
-        <h2 id="modal-title">¡Ganaste!</h2>
-        <p id="prize-text"></p>
-        <button id="close-btn" class="btn-primary">Cerrar</button>
-      </div>
-    </div>
+<!-- modal dentro de index.html: reemplaza el bloque existente por esto -->
+<div id="result" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal-content">
+    <h2 id="modal-title">¡Ganaste!</h2>
+    <p id="prize-text"></p>
+    <!-- nueva línea: fecha/hora de reclamo -->
+    <p id="prize-date" class="prize-date" aria-hidden="true"></p>
+    <button id="close-btn" class="btn-primary">Cerrar</button>
+  </div>
+</div>
 
     <div id="confetti" aria-hidden="true"></div>
   </main>
