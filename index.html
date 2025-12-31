@@ -13,6 +13,25 @@
 <body class="dropping">
   <canvas id="sky"></canvas>
 
+<!-- Splash / pantalla de inicio -->
+<div id="splash" aria-hidden="false">
+  <div id="splash-stars" aria-hidden="true"><!-- stars will be injected here --></div>
+
+  <div id="splash-content" role="dialog" aria-label="Pantalla de carga">
+    <!-- logo2: reemplaza src por la ruta real de tu imagen logo2 -->
+    <img id="logo2" src="assets/logo2.png" alt="Logo" />
+    <div id="loading-wrap" aria-hidden="true">
+      <div id="loading-label">Juego cargando</div>
+      <div id="loading-bar">
+        <div id="loading-progress" style="width:0%"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Contenedor para colocar el logo en la sección inferior una vez cargado -->
+<footer id="bottom-logo-container" aria-hidden="true"></footer>
+  
   <!-- defs (filters / gradients kept minimal) -->
   <svg width="0" height="0" style="position:absolute;pointer-events:none" aria-hidden="true">
     <defs>
