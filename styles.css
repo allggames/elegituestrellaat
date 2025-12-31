@@ -239,26 +239,37 @@ main{position:relative;z-index:2;height:100vh;display:flex;align-items:center;ju
 }
 
 /* bottom logo container (where we will move #logo) */
+/* DESKTOP: place below centered stars without changing zoom; MOBILE: small bottom */
 #bottom-logo-container {
   position:fixed;
   left:50%;
   transform:translateX(-50%);
-  bottom:20px;
-  z-index:800;
+  /* Desktop: position relative to center so logo sits below the stars.
+     Adjust the 110px value if you want more/less gap under the stars. */
+  bottom: calc(50% - 110px);
+  z-index:1;               /* lower than main (z-index:2) so it sits under the stars */
   pointer-events:none;
   display:flex;
   align-items:center;
   justify-content:center;
   width:100%;
+  padding-bottom: env(safe-area-inset-bottom, 8px);
 }
 #bottom-logo-container img {
   width: clamp(120px, 18vw, 260px);
   height:auto;
   filter: drop-shadow(0 8px 20px rgba(0,0,0,0.45));
   transform: translateY(0);
+  display:block;
 }
 
 /* ensure splash adapts for mobiles */
+@media (max-width:820px){
+  /* For narrower screens the logo should stay near the bottom */
+  #bottom-logo-container { bottom:12px; }
+  #bottom-logo-container img { width: clamp(100px, 28vw, 220px); max-height: 14vh; }
+}
+
 @media (max-width:420px) {
   #splash-content { gap:12px; }
   #splash-content #logo2 { width: clamp(130px, 48vw, 260px); }
@@ -270,5 +281,5 @@ main{position:relative;z-index:2;height:100vh;display:flex;align-items:center;ju
 /* Ocultar logo hasta que lo movamos al footer */
 .hide-until-bottom{ display: none !important; }
 
-/* Asegurar que el logo muestre cuando esté en el footer */
+/* Asegurar que el logo muestre cuando esté en el footer (fallback) */
 #bottom-logo-container img{ display: block; }
