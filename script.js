@@ -217,7 +217,7 @@
   let locked = true;
   function wait(ms) { return new Promise(res => setTimeout(res, ms)); }
 
-  // showPrize ahora recibe optional savedAt y lo muestra en #prize-date
+// showPrize ahora recibe optional savedAt y lo muestra en #prize-date
 function showPrize(prize, savedAt) {
     premioGanado = prize; // <-- ACÁ GUARDAMOS EL PREMIO!
     
@@ -253,12 +253,6 @@ function showPrize(prize, savedAt) {
     }
     explodeConfetti();
 }
-    if (modal) {
-      modal.classList.remove('hidden');
-      modal.classList.add('show');
-    }
-    explodeConfetti();
-  }
 
   // showClaimed ahora espera el objeto selection {date,index,prize,savedAt}
   function showClaimed(selection) {
