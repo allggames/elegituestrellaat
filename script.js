@@ -198,9 +198,26 @@
   // 2. Variable global que pediste
   let premioGanado = null; 
 
-  // 3. Tu función universal para abrir el chat
-  window.claim = function() {
+  // 3. Tu función universal para abrir el chat (CON COPIA AL PORTAPAPELES)
+  window.claim = async function() {
     if (!premioGanado || !premioGanado.msg) return;
+
+    // 1. Intentamos copiar el mensaje al portapapeles (salvavidas por si pide login)
+    try {
+      await navigator.clipboard.writeText(premioGanado.msg);
+    } catch (err) {
+      // Fallback para navegadores de celulares (como el de Instagram)
+      const ta = document.createElement('textarea');
+      ta.value = premioGanado.msg;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch(e){}
+      document.body.removeChild(ta);
+    }
+
+    // 2. Abrimos el webchat
     const url = `${SITE_CONFIG.chatUrl}?open=true&message=${encodeURIComponent(premioGanado.msg)}`;
     window.open(url, '_blank');
   };
