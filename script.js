@@ -192,11 +192,18 @@
   }
 
   /* ---------- UI & interactions (flip, prize, confetti) ---------- */
-  const prizes = [
-    { label: "100% de bono + 1000 fichas", weight: 1 },
-    { label: "150% de bono + 1500 fichas", weight: 1 },
-    { label: "200% de bono + 2000 fichas", weight: 1 }
-  ];
+  // 1. Tomamos los premios de tu config.js universal
+  const prizes = SITE_CONFIG.prizes; 
+  
+  // 2. Variable global que pediste
+  let premioGanado = null; 
+
+  // 3. Tu función universal para abrir el chat
+  window.claim = function() {
+    if (!premioGanado || !premioGanado.msg) return;
+    const url = `${SITE_CONFIG.chatUrl}?open=true&message=${encodeURIComponent(premioGanado.msg)}`;
+    window.open(url, '_blank');
+  };
   function weightedRandom(arr) {
     const total = arr.reduce((s, x) => s + (x.weight || 1), 0);
     let r = Math.random() * total;
@@ -211,13 +218,17 @@
   function wait(ms) { return new Promise(res => setTimeout(res, ms)); }
 
   // showPrize ahora recibe optional savedAt y lo muestra en #prize-date
-  function showPrize(prize, savedAt) {
+function showPrize(prize, savedAt) {
+    premioGanado = prize; // <-- ACÁ GUARDAMOS EL PREMIO!
+    
     const prizeText = document.getElementById('prize-text');
     const prizeDate = document.getElementById('prize-date');
     const modal = document.getElementById('result');
     const titleEl = document.getElementById('modal-title');
+    
     if (titleEl) titleEl.textContent = '¡Ganaste!';
     if (prizeText) prizeText.textContent = prize.label;
+    
     if (prizeDate) {
       if (savedAt) {
         prizeDate.textContent = 'Reclamado: ' + formatSavedAt(savedAt);
@@ -227,6 +238,21 @@
         prizeDate.setAttribute('aria-hidden','true');
       }
     }
+
+    // Configurar el botón para RECLAMAR (porque recién gana)
+    const btnReclamar = document.getElementById('btn-reclamar');
+    if (btnReclamar) {
+        btnReclamar.textContent = "Reclamar Premio";
+        btnReclamar.onclick = window.claim;
+    }
+
+    // Mostrar el modal y tirar el confeti
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.classList.add('show');
+    }
+    explodeConfetti();
+}
     if (modal) {
       modal.classList.remove('hidden');
       modal.classList.add('show');
