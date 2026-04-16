@@ -198,12 +198,13 @@
   // 2. Variable global que pediste
   let premioGanado = null; 
 // 3. Tu función universal para abrir el chat (VERSIÓN MISMA PESTAÑA)
-  window.claim = function() {
+window.claim = function() {
     if (!premioGanado || !premioGanado.msg) return;
     
-    const url = `${SITE_CONFIG.chatUrl}?open=true&message=${encodeURIComponent(premioGanado.msg)}`;
+    // Armamos la URL igual que en la ruleta
+    const url = `${SITE_CONFIG.chatUrl}/?open=true&message=${encodeURIComponent(premioGanado.msg)}`;
     window.location.href = url; 
-  };
+};
   function weightedRandom(arr) {
     const total = arr.reduce((s, x) => s + (x.weight || 1), 0);
     let r = Math.random() * total;
