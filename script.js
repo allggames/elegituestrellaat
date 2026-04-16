@@ -197,12 +197,10 @@
   
   // 2. Variable global que pediste
   let premioGanado = null; 
-// 3. Tu función universal (ENVÍO AUTOMÁTICO EN LA URL)
+// 3. Tu función universal (VERSIÓN CAPTURA MANUAL)
 window.claim = function() {
-    if (!premioGanado || !premioGanado.msg) return;
-    
-    // Armamos la URL inyectando el mensaje directamente
-    const url = `${SITE_CONFIG.chatUrl}/?open=true&message=${encodeURIComponent(premioGanado.msg)}`;
+    // Abrimos la URL de Atenea SOLO con el parámetro para abrir el chat
+    const url = `${SITE_CONFIG.chatUrl}/?open=true`; 
     window.location.href = url; 
 };
   function weightedRandom(arr) {
@@ -240,12 +238,12 @@ function showPrize(prize, savedAt) {
       }
     }
 
-    // ACA ESTÁ LA MAGIA: Le asignamos la función al botón por código
+    // Configurar el botón para CAPTURAR Y RECLAMAR
     const btnReclamar = document.getElementById('btn-reclamar');
     if (btnReclamar) {
-        btnReclamar.textContent = "Reclamar Premio";
-        // Asignamos la función window.claim al evento onclick del botón
-        btnReclamar.onclick = window.claim; 
+        // Le ponemos el texto que pediste con un emoji de camarita para que se entienda fácil
+        btnReclamar.textContent = "Capturá y tocá acá 📸"; 
+        btnReclamar.onclick = window.claim;
     }
 
     // Mostrar el modal y tirar el confeti
