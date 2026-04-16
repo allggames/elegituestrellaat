@@ -197,11 +197,11 @@
   
   // 2. Variable global que pediste
   let premioGanado = null; 
-// 3. Tu función universal para abrir el chat (VERSIÓN MISMA PESTAÑA)
+// 3. Tu función universal (ENVÍO AUTOMÁTICO EN LA URL)
 window.claim = function() {
     if (!premioGanado || !premioGanado.msg) return;
     
-    // Armamos la URL igual que en la ruleta
+    // Armamos la URL inyectando el mensaje directamente
     const url = `${SITE_CONFIG.chatUrl}/?open=true&message=${encodeURIComponent(premioGanado.msg)}`;
     window.location.href = url; 
 };
