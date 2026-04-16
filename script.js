@@ -240,11 +240,12 @@ function showPrize(prize, savedAt) {
       }
     }
 
-    // Configurar el botón para RECLAMAR (porque recién gana)
+    // ACA ESTÁ LA MAGIA: Le asignamos la función al botón por código
     const btnReclamar = document.getElementById('btn-reclamar');
     if (btnReclamar) {
         btnReclamar.textContent = "Reclamar Premio";
-        btnReclamar.onclick = window.claim;
+        // Asignamos la función window.claim al evento onclick del botón
+        btnReclamar.onclick = window.claim; 
     }
 
     // Mostrar el modal y tirar el confeti
