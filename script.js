@@ -204,11 +204,6 @@
     const url = `${SITE_CONFIG.chatUrl}?open=true&message=${encodeURIComponent(premioGanado.msg)}`;
     window.location.href = url; 
   };
-
-    // 2. Abrimos el webchat
-    const url = `${SITE_CONFIG.chatUrl}?open=true&message=${encodeURIComponent(premioGanado.msg)}`;
-    window.open(url, '_blank');
-  };
   function weightedRandom(arr) {
     const total = arr.reduce((s, x) => s + (x.weight || 1), 0);
     let r = Math.random() * total;
